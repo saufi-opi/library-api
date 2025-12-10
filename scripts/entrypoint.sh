@@ -13,7 +13,7 @@ run_prestart() {
 
     # Create initial data
     echo "Creating initial data..."
-    python src/initial_data.py
+    python src/core/initial_data.py
 
     echo "Prestart tasks completed!"
 }
