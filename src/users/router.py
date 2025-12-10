@@ -1,8 +1,8 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import func, select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import asc, col, desc, func, select
 
 from src.core.dependencies import (
     CurrentUser,
@@ -19,6 +19,7 @@ from src.users.schemas import (
     UserCreate,
     UserEffectivePermissions,
     UserPublic,
+    UserQueryParams,
     UserRegister,
     UsersPublic,
     UserUpdate,
@@ -35,19 +36,66 @@ router = APIRouter(prefix="/users", tags=["users"])
 )
 def read_users(
     session: SessionDep,
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=0)
+    params: UserQueryParams = Depends(),
 ) -> Any:
     """
     Retrieve users.
+
+    Requires: superuser privileges
+
+    Query parameters:
+    - skip: Number of records to skip (pagination)
+    - limit: Maximum number of records to return (max 1000)
+    - search: Search term for email (case-insensitive partial match)
+    - role: Filter by user role (librarian or member)
+    - is_active: Filter by active status (true/false)
+    - sort: Sort field with optional - prefix for descending (e.g., 'email', '-role', '-is_active')
     """
+    from src.auth.permissions import UserRole
     from src.users.models import User
 
-    count_statement = select(func.count()).select_from(User)
+    # Build query
+    query = select(User)
+
+    # Apply search filter
+    if params.search:
+        search_term = f"%{params.search}%"
+        query = query.where(col(User.email).ilike(search_term))
+
+    # Apply role filter
+    if params.role:
+        try:
+            user_role = UserRole(params.role)
+            query = query.where(User.role == user_role)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid role. Valid roles: {[r.value for r in UserRole]}"
+            )
+
+    # Apply is_active filter
+    if params.is_active is not None:
+        query = query.where(User.is_active == params.is_active)
+
+    # Count total matching records
+    count_statement = select(func.count()).select_from(query.subquery())
     count = session.exec(count_statement).one()
 
-    statement = select(User).offset(skip).limit(limit)
-    users = session.exec(statement).all()
+    # Apply sorting
+    sort_column = {
+        "email": User.email,
+        "role": User.role,
+        "is_active": User.is_active,
+    }.get(params.sort_field, User.email)
+
+    if params.is_descending:
+        query = query.order_by(desc(sort_column))
+    else:
+        query = query.order_by(asc(sort_column))
+
+    # Apply pagination
+    query = query.offset(params.skip).limit(params.limit)
+    users = session.exec(query).all()
 
     return UsersPublic(data=users, count=count)
 

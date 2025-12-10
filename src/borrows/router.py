@@ -1,14 +1,15 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import col, desc, func, select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import asc, col, desc, func, select
 
 from src.auth.permissions import Permission
 from src.borrows import service
 from src.borrows.models import BorrowRecord
 from src.borrows.schemas import (
     BorrowCreate,
+    BorrowQueryParams,
     BorrowRecordPublic,
     BorrowRecordsPublic,
 )
@@ -20,6 +21,9 @@ from src.core.dependencies import (
 )
 
 router = APIRouter(prefix="/borrows", tags=["borrows"])
+
+
+
 
 
 @router.post(
@@ -94,9 +98,7 @@ def return_book(
 def get_my_borrows(
     session: SessionDep,
     current_user: CurrentUser,
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=0),
-    active_only: bool = False,
+    params: BorrowQueryParams = Depends(),
 ) -> Any:
     """
     Get the current user's borrow records.
@@ -105,21 +107,39 @@ def get_my_borrows(
 
     Query parameters:
     - skip: Number of records to skip (pagination)
-    - limit: Maximum number of records to return
+    - limit: Maximum number of records to return (max 1000)
     - active_only: If true, only return books currently borrowed (not returned)
+    - book_id: Filter by specific book ID
+    - sort: Sort field with optional - prefix for descending (default: -borrowed_at for most recent first)
     """
-    # Build query
+    # Build query - always filter by current user
     query = select(BorrowRecord).where(BorrowRecord.borrower_id == current_user.id)
 
-    if active_only:
+    # Apply active_only filter
+    if params.active_only:
         query = query.where(BorrowRecord.returned_at == None)  # noqa: E711
 
-    # Count total
+    # Apply book_id filter
+    if params.book_id:
+        query = query.where(BorrowRecord.book_id == params.book_id)
+
+    # Count total matching records
     count_query = select(func.count()).select_from(query.subquery())
     count = session.exec(count_query).one()
 
-    # Apply pagination and ordering
-    query = query.order_by(desc(col(BorrowRecord.borrowed_at))).offset(skip).limit(limit)
+    # Apply sorting
+    sort_column = {
+        "borrowed_at": BorrowRecord.borrowed_at,
+        "returned_at": BorrowRecord.returned_at,
+    }.get(params.sort_field, BorrowRecord.borrowed_at)
+
+    if params.is_descending:
+        query = query.order_by(desc(col(sort_column)))
+    else:
+        query = query.order_by(asc(col(sort_column)))
+
+    # Apply pagination
+    query = query.offset(params.skip).limit(params.limit)
     records = session.exec(query).all()
 
     return BorrowRecordsPublic(data=records, count=count)
@@ -133,11 +153,7 @@ def get_my_borrows(
 def list_all_borrows(
     session: SessionDep,
     _current_user: CurrentUser,
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=0),
-    active_only: bool = False,
-    borrower_id: uuid.UUID | None = None,
-    book_id: uuid.UUID | None = None,
+    params: BorrowQueryParams = Depends(),
 ) -> Any:
     """
     Get all borrow records in the library.
@@ -146,29 +162,44 @@ def list_all_borrows(
 
     Query parameters:
     - skip: Number of records to skip (pagination)
-    - limit: Maximum number of records to return
+    - limit: Maximum number of records to return (max 1000)
     - active_only: If true, only return books currently borrowed (not returned)
     - borrower_id: Filter by borrower user ID
     - book_id: Filter by book ID
+    - sort: Sort field with optional - prefix for descending (default: -borrowed_at for most recent first)
     """
     # Build query
     query = select(BorrowRecord)
 
-    if active_only:
+    # Apply active_only filter
+    if params.active_only:
         query = query.where(BorrowRecord.returned_at == None)  # noqa: E711
 
-    if borrower_id:
-        query = query.where(BorrowRecord.borrower_id == borrower_id)
+    # Apply borrower_id filter
+    if params.borrower_id:
+        query = query.where(BorrowRecord.borrower_id == params.borrower_id)
 
-    if book_id:
-        query = query.where(BorrowRecord.book_id == book_id)
+    # Apply book_id filter
+    if params.book_id:
+        query = query.where(BorrowRecord.book_id == params.book_id)
 
-    # Count total
+    # Count total matching records
     count_query = select(func.count()).select_from(query.subquery())
     count = session.exec(count_query).one()
 
-    # Apply pagination and ordering
-    query = query.order_by(desc(col(BorrowRecord.borrowed_at))).offset(skip).limit(limit)
+    # Apply sorting
+    sort_column = {
+        "borrowed_at": BorrowRecord.borrowed_at,
+        "returned_at": BorrowRecord.returned_at,
+    }.get(params.sort_field, BorrowRecord.borrowed_at)
+
+    if params.is_descending:
+        query = query.order_by(desc(col(sort_column)))
+    else:
+        query = query.order_by(asc(col(sort_column)))
+
+    # Apply pagination
+    query = query.offset(params.skip).limit(params.limit)
     records = session.exec(query).all()
 
     return BorrowRecordsPublic(data=records, count=count)

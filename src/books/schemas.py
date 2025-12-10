@@ -2,6 +2,7 @@ import re
 import uuid
 from datetime import datetime
 
+from fastapi import Query
 from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
@@ -71,3 +72,29 @@ class BookPublic(BookBase):
 class BooksPublic(SQLModel):
     data: list[BookPublic]
     count: int
+
+class BookQueryParams:
+    """Query parameters for listing books."""
+
+    def __init__(
+        self,
+        skip: int = Query(default=0, ge=0, description="Number of records to skip"),
+        limit: int = Query(default=100, ge=0, le=1000, description="Maximum records to return"),
+        search: str | None = Query(default=None, description="Search in title and author"),
+        isbn: str | None = Query(default=None, description="Filter by exact ISBN"),
+        available_only: bool = Query(default=False, description="Only show available books"),
+        sort: str = Query(
+            default="title",
+            description="Sort by field. Prefix with - for descending. Examples: title, -created_at, -author"
+        ),
+    ):
+        self.skip = skip
+        self.limit = limit
+        self.search = search
+        self.isbn = isbn
+        self.available_only = available_only
+        self.sort = sort
+
+        # Parse sorting
+        self.is_descending = sort.startswith("-")
+        self.sort_field = sort.lstrip("+-")

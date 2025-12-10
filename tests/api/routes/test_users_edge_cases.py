@@ -5,7 +5,6 @@ from sqlmodel import Session
 from src.books.models import Book
 from src.borrows.models import BorrowRecord
 from src.core.config import settings
-from src.users.models import User
 from src.users.schemas import UserCreate
 from src.users.service import create_user
 from tests.utils.utils import random_email, random_lower_string
@@ -265,12 +264,13 @@ class TestUsersEdgeCases:
         client: TestClient,
         superuser_token_headers: dict,
     ):
-        """Should handle very large limit value."""
+        """Should reject very large limit value (max 1000)."""
         response = client.get(
             f"{settings.API_V1_STR}/users/?limit=99999",
             headers=superuser_token_headers,
         )
-        assert response.status_code == 200
+        # Should reject limit above max (1000)
+        assert response.status_code == 422
 
     def test_update_user_with_sql_injection_attempt(
         self,

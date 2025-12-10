@@ -4,7 +4,7 @@ from collections.abc import Generator
 from typing import TYPE_CHECKING, Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
@@ -50,6 +50,28 @@ def get_db() -> Generator[Session]:
 
 SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
+
+
+class PaginationParams:
+    """
+    Common pagination parameters for list endpoints.
+
+    Usage:
+        @router.get("/items/")
+        def list_items(pagination: PaginationDep):
+            query = select(Item).offset(pagination.skip).limit(pagination.limit)
+            ...
+    """
+    def __init__(
+        self,
+        skip: int = Query(default=0, ge=0, description="Number of records to skip"),
+        limit: int = Query(default=100, ge=0, le=1000, description="Maximum number of records to return"),
+    ):
+        self.skip = skip
+        self.limit = limit
+
+
+PaginationDep = Annotated[PaginationParams, Depends()]
 
 
 def get_current_user(session: SessionDep, token: TokenDep):

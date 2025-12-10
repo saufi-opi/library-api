@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from fastapi import Query
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
@@ -80,3 +81,29 @@ class UsersPublic(SQLModel):
     data: list[UserPublic]
     count: int
 
+
+class UserQueryParams:
+    """Query parameters for listing users."""
+
+    def __init__(
+        self,
+        skip: int = Query(default=0, ge=0, description="Number of records to skip"),
+        limit: int = Query(default=100, ge=0, le=1000, description="Maximum records to return"),
+        search: str | None = Query(default=None, description="Search in email"),
+        role: str | None = Query(default=None, description="Filter by role (librarian/member)"),
+        is_active: bool | None = Query(default=None, description="Filter by active status"),
+        sort: str = Query(
+            default="email",
+            description="Sort by field. Prefix with - for descending. Examples: email, -role, -is_active"
+        ),
+    ):
+        self.skip = skip
+        self.limit = limit
+        self.search = search
+        self.role = role
+        self.is_active = is_active
+        self.sort = sort
+
+        # Parse sorting
+        self.is_descending = sort.startswith("-")
+        self.sort_field = sort.lstrip("+-")
