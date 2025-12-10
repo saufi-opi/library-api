@@ -1,4 +1,5 @@
 """Tests for borrows API endpoints."""
+
 from datetime import UTC
 
 from fastapi.testclient import TestClient
@@ -76,6 +77,7 @@ class TestBorrowsAPI:
     ):
         """Should not be able to borrow a non-existent book."""
         import uuid
+
         fake_id = str(uuid.uuid4())
 
         response = client.post(

@@ -62,10 +62,16 @@ class PaginationParams:
             query = select(Item).offset(pagination.skip).limit(pagination.limit)
             ...
     """
+
     def __init__(
         self,
         skip: int = Query(default=0, ge=0, description="Number of records to skip"),
-        limit: int = Query(default=100, ge=0, le=1000, description="Maximum number of records to return"),
+        limit: int = Query(
+            default=100,
+            ge=0,
+            le=1000,
+            description="Maximum number of records to return",
+        ),
     ):
         self.skip = skip
         self.limit = limit
@@ -168,7 +174,7 @@ def require_permission(*required_permissions: Permission):
         if missing_permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Missing required permissions: {', '.join(missing_permissions)}"
+                detail=f"Missing required permissions: {', '.join(missing_permissions)}",
             )
         return current_user
 
@@ -195,9 +201,8 @@ def require_any_permission(*required_permissions: Permission):
         if not any(perm in user_permissions for perm in required_permissions):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Requires one of: {', '.join(p.value for p in required_permissions)}"
+                detail=f"Requires one of: {', '.join(p.value for p in required_permissions)}",
             )
         return current_user
 
     return permission_checker
-

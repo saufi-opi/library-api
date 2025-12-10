@@ -9,34 +9,41 @@ from src.borrows.models import BorrowRecord
 
 class BookNotFoundError(Exception):
     """Raised when a book is not found."""
+
     pass
 
 
 class BookNotAvailableError(Exception):
     """Raised when trying to borrow a book that is not available."""
+
     pass
 
 
 class BorrowRecordNotFoundError(Exception):
     """Raised when a borrow record is not found."""
+
     pass
 
 
 class BookAlreadyReturnedError(Exception):
     """Raised when trying to return a book that was already returned."""
+
     pass
 
 
 class NotBorrowerError(Exception):
     """Raised when a user tries to return a book they didn't borrow."""
+
     pass
 
 
-def get_active_borrow_for_book(session: Session, book_id: uuid.UUID) -> BorrowRecord | None:
+def get_active_borrow_for_book(
+    session: Session, book_id: uuid.UUID
+) -> BorrowRecord | None:
     """Get the active (not returned) borrow record for a book."""
     statement = select(BorrowRecord).where(
         BorrowRecord.book_id == book_id,
-        BorrowRecord.returned_at == None  # noqa: E711
+        BorrowRecord.returned_at == None,  # noqa: E711
     )
     return session.exec(statement).first()
 
@@ -75,9 +82,7 @@ def borrow_book(
     # Check no active borrow exists (double-check)
     active_borrow = get_active_borrow_for_book(session, book_id)
     if active_borrow:
-        raise BookNotAvailableError(
-            f"Book '{book.title}' is already borrowed"
-        )
+        raise BookNotAvailableError(f"Book '{book.title}' is already borrowed")
 
     # Create borrow record
     borrow_record = BorrowRecord(

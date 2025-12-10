@@ -12,6 +12,7 @@ class Book(SQLModel, table=True):
     each with a unique id. Books with the same ISBN must have
     matching title and author.
     """
+
     __tablename__ = "book"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

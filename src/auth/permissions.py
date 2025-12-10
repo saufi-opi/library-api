@@ -9,6 +9,7 @@ class Permission(str, Enum):
     Granular permissions for the library system.
     Naming convention: resource:action
     """
+
     # Books permissions
     BOOKS_CREATE = "books:create"
     BOOKS_READ = "books:read"
@@ -16,9 +17,9 @@ class Permission(str, Enum):
     BOOKS_DELETE = "books:delete"
 
     # Borrows permissions
-    BORROWS_CREATE = "borrows:create"      # Borrow a book
-    BORROWS_RETURN = "borrows:return"      # Return a borrowed book
-    BORROWS_READ = "borrows:read"          # View own borrow records
+    BORROWS_CREATE = "borrows:create"  # Borrow a book
+    BORROWS_RETURN = "borrows:return"  # Return a borrowed book
+    BORROWS_READ = "borrows:read"  # View own borrow records
     BORROWS_READ_ALL = "borrows:read_all"  # View all borrow records
 
     # Users permissions
@@ -28,12 +29,14 @@ class Permission(str, Enum):
 
 class UserRole(str, Enum):
     """User roles with default permission sets."""
+
     LIBRARIAN = "librarian"
     MEMBER = "member"
 
 
 class PermissionEffect(str, Enum):
     """Effect of a permission override."""
+
     ALLOW = "allow"
     DENY = "deny"
 

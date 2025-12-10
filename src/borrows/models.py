@@ -15,6 +15,7 @@ class BorrowRecord(SQLModel, table=True):
     Tracks when a book was borrowed and returned.
     A book can only be borrowed by one user at a time.
     """
+
     __tablename__ = "borrow_record"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

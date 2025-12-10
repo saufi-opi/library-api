@@ -37,6 +37,7 @@ def get_rate_limiter(times: int, seconds: int):
     Returns:
         Runtime-checking rate limiter dependency
     """
+
     class RuntimeRateLimiter:
         """Rate limiter that checks environment at runtime."""
 
@@ -50,7 +51,9 @@ def get_rate_limiter(times: int, seconds: int):
             if settings.RATE_LIMIT_ENABLED:
                 # Lazy initialization of real rate limiter
                 if self._real_limiter is None:
-                    self._real_limiter = RateLimiter(times=self.times, seconds=self.seconds)
+                    self._real_limiter = RateLimiter(
+                        times=self.times, seconds=self.seconds
+                    )
                 await self._real_limiter(request, response)
             # else: no-op for testing
 

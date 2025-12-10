@@ -30,7 +30,7 @@ from src.users.schemas import (
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))]
+    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))],
 )
 
 
@@ -75,7 +75,7 @@ def read_users(
         except ValueError:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid role. Valid roles: {[r.value for r in UserRole]}"
+                detail=f"Invalid role. Valid roles: {[r.value for r in UserRole]}",
             )
 
     # Apply is_active filter
@@ -282,14 +282,14 @@ def delete_user(
     active_borrows = session.exec(
         select(BorrowRecord).where(
             BorrowRecord.borrower_id == user_id,
-            BorrowRecord.returned_at == None  # noqa: E711
+            BorrowRecord.returned_at == None,  # noqa: E711
         )
     ).first()
 
     if active_borrows:
         raise HTTPException(
             status_code=400,
-            detail="Cannot delete user with active borrows. User must return all books first."
+            detail="Cannot delete user with active borrows. User must return all books first.",
         )
 
     session.delete(user)
@@ -316,8 +316,7 @@ def get_user_effective_permissions(
     # Check authorization
     if user_id != current_user.id and not current_user.is_superuser:
         raise HTTPException(
-            status_code=403,
-            detail="You can only view your own permissions"
+            status_code=403, detail="You can only view your own permissions"
         )
 
     user = session.get(User, user_id)
@@ -329,7 +328,7 @@ def get_user_effective_permissions(
     return UserEffectivePermissions(
         user_id=user.id,
         role=user.role,
-        effective_permissions=[p.value for p in effective_perms]
+        effective_permissions=[p.value for p in effective_perms],
     )
 
 
@@ -388,7 +387,7 @@ def add_permission_override(
         raise HTTPException(
             status_code=400,
             detail=f"Invalid permission: {override_in.permission}. "
-                   f"Valid permissions: {[p.value for p in Permission]}"
+            f"Valid permissions: {[p.value for p in Permission]}",
         )
 
     # Check if override already exists
@@ -397,7 +396,7 @@ def add_permission_override(
             raise HTTPException(
                 status_code=400,
                 detail=f"Permission override for '{override_in.permission}' already exists. "
-                       "Delete it first to change the effect."
+                "Delete it first to change the effect.",
             )
 
     # Create override
@@ -434,7 +433,9 @@ def delete_permission_override(
         raise HTTPException(status_code=404, detail="Permission override not found")
 
     if override.user_id != user_id:
-        raise HTTPException(status_code=400, detail="Override does not belong to this user")
+        raise HTTPException(
+            status_code=400, detail="Override does not belong to this user"
+        )
 
     session.delete(override)
     return Message(message="Permission override deleted successfully")

@@ -1,4 +1,5 @@
 """Tests for books API endpoints."""
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -161,8 +162,15 @@ class TestBooksAPI:
     ):
         """Should be able to filter for available books only."""
         # Create available and unavailable books
-        available = Book(isbn="978-1-449-35573-9", title="Available", author="A", is_available=True)
-        unavailable = Book(isbn="978-0-262-03384-8", title="Unavailable", author="B", is_available=False)
+        available = Book(
+            isbn="978-1-449-35573-9", title="Available", author="A", is_available=True
+        )
+        unavailable = Book(
+            isbn="978-0-262-03384-8",
+            title="Unavailable",
+            author="B",
+            is_available=False,
+        )
         db.add(available)
         db.add(unavailable)
         db.commit()

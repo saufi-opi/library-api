@@ -18,10 +18,13 @@ class UserPermissionOverride(SQLModel, table=True):
     Allows granting or denying specific permissions beyond role defaults.
     Similar to AWS IAM inline policies.
     """
+
     __tablename__ = "user_permission_override"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, ondelete="CASCADE")
+    user_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
     permission: str = Field(max_length=100)  # e.g., "books:create"
     effect: PermissionEffect = Field(default=PermissionEffect.ALLOW)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

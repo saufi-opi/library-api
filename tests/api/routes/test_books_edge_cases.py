@@ -1,4 +1,5 @@
 """Edge case tests for books API."""
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -166,6 +167,7 @@ class TestBooksEdgeCases:
     ):
         """Should return 404 for nonexistent book."""
         import uuid
+
         fake_id = str(uuid.uuid4())
 
         response = client.get(

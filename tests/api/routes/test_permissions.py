@@ -1,4 +1,5 @@
 """Tests for permission system."""
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -192,6 +193,7 @@ class TestPermissionEndpoints:
     ):
         """Non-superusers should not view others' permissions."""
         import uuid
+
         other_user_id = uuid.uuid4()
 
         response = client.get(

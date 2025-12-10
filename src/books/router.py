@@ -21,7 +21,7 @@ from src.core.ratelimit import get_rate_limiter
 router = APIRouter(
     prefix="/books",
     tags=["books"],
-    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))]
+    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))],
 )
 
 
@@ -186,8 +186,7 @@ def delete_book(
 
     if not book.is_available:
         raise HTTPException(
-            status_code=400,
-            detail="Cannot delete a book that is currently borrowed"
+            status_code=400, detail="Cannot delete a book that is currently borrowed"
         )
 
     session.delete(book)

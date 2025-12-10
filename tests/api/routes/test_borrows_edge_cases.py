@@ -1,4 +1,5 @@
 """Edge case tests for borrows API."""
+
 from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
@@ -101,6 +102,7 @@ class TestBorrowsEdgeCases:
     ):
         """Should return 404 for nonexistent borrow record."""
         import uuid
+
         fake_id = str(uuid.uuid4())
 
         response = client.post(
@@ -331,8 +333,8 @@ class TestBorrowsEdgeCases:
         # Verify timestamp is reasonable
         borrowed_at_str = data["borrowed_at"]
         # Handle both 'Z' and '+00:00' timezone formats
-        if borrowed_at_str.endswith('Z'):
-            borrowed_at_str = borrowed_at_str.replace('Z', '+00:00')
+        if borrowed_at_str.endswith("Z"):
+            borrowed_at_str = borrowed_at_str.replace("Z", "+00:00")
         borrowed_at = datetime.fromisoformat(borrowed_at_str)
         # Ensure timezone-aware comparison
         if borrowed_at.tzinfo is None:

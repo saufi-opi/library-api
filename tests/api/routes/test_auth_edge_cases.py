@@ -1,4 +1,5 @@
 """Edge case tests for authentication."""
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 

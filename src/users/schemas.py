@@ -67,11 +67,13 @@ class UserPublic(UserBase):
 
 class UserWithPermissions(UserPublic):
     """User with their permission overrides."""
+
     permission_overrides: list[PermissionOverridePublic] = []
 
 
 class UserEffectivePermissions(SQLModel):
     """Response showing user's calculated effective permissions."""
+
     user_id: uuid.UUID
     role: UserRole
     effective_permissions: list[str]  # List of permission strings
@@ -88,13 +90,19 @@ class UserQueryParams:
     def __init__(
         self,
         skip: int = Query(default=0, ge=0, description="Number of records to skip"),
-        limit: int = Query(default=100, ge=0, le=1000, description="Maximum records to return"),
+        limit: int = Query(
+            default=100, ge=0, le=1000, description="Maximum records to return"
+        ),
         search: str | None = Query(default=None, description="Search in email"),
-        role: str | None = Query(default=None, description="Filter by role (librarian/member)"),
-        is_active: bool | None = Query(default=None, description="Filter by active status"),
+        role: str | None = Query(
+            default=None, description="Filter by role (librarian/member)"
+        ),
+        is_active: bool | None = Query(
+            default=None, description="Filter by active status"
+        ),
         sort: str = Query(
             default="email",
-            description="Sort by field. Prefix with - for descending. Examples: email, -role, -is_active"
+            description="Sort by field. Prefix with - for descending. Examples: email, -role, -is_active",
         ),
     ):
         self.skip = skip

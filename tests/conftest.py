@@ -1,4 +1,5 @@
 """Pytest fixtures for testing."""
+
 from collections.abc import Generator
 
 import pytest
@@ -109,9 +110,7 @@ def test_librarian(client: TestClient) -> User:  # noqa: ARG001
 def test_member(client: TestClient) -> User:  # noqa: ARG001
     """Create or get a member for testing."""
     with Session(engine) as session:
-        user = session.exec(
-            select(User).where(User.email == "member@test.com")
-        ).first()
+        user = session.exec(select(User).where(User.email == "member@test.com")).first()
         if user:
             # Update existing user to ensure correct settings
             user.hashed_password = get_password_hash("testpass123")
@@ -148,7 +147,9 @@ def get_token_headers(client: TestClient, email: str, password: str) -> dict[str
 @pytest.fixture(scope="module")
 def superuser_token_headers(client: TestClient, test_superuser: User) -> dict[str, str]:  # noqa: ARG001
     """Get superuser authentication headers."""
-    return get_token_headers(client, settings.FIRST_SUPERUSER, settings.FIRST_SUPERUSER_PASSWORD)
+    return get_token_headers(
+        client, settings.FIRST_SUPERUSER, settings.FIRST_SUPERUSER_PASSWORD
+    )
 
 
 @pytest.fixture(scope="module")

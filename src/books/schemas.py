@@ -51,6 +51,7 @@ class BookCreate(BookBase):
     Note: If a book with the same ISBN already exists,
     the title and author must match the existing book.
     """
+
     pass
 
 
@@ -73,19 +74,26 @@ class BooksPublic(SQLModel):
     data: list[BookPublic]
     count: int
 
+
 class BookQueryParams:
     """Query parameters for listing books."""
 
     def __init__(
         self,
         skip: int = Query(default=0, ge=0, description="Number of records to skip"),
-        limit: int = Query(default=100, ge=0, le=1000, description="Maximum records to return"),
-        search: str | None = Query(default=None, description="Search in title and author"),
+        limit: int = Query(
+            default=100, ge=0, le=1000, description="Maximum records to return"
+        ),
+        search: str | None = Query(
+            default=None, description="Search in title and author"
+        ),
         isbn: str | None = Query(default=None, description="Filter by exact ISBN"),
-        available_only: bool = Query(default=False, description="Only show available books"),
+        available_only: bool = Query(
+            default=False, description="Only show available books"
+        ),
         sort: str = Query(
             default="title",
-            description="Sort by field. Prefix with - for descending. Examples: title, -created_at, -author"
+            description="Sort by field. Prefix with - for descending. Examples: title, -created_at, -author",
         ),
     ):
         self.skip = skip

@@ -14,11 +14,10 @@ from src.users.schemas import UserPublic
 router = APIRouter(tags=["login"])
 
 
-
-@router.post("/login/access-token", dependencies=[Depends(get_rate_limiter(times=5, seconds=60))])
-def login_access_token(
-    session: SessionDep, body: LoginAccessToken
-) -> Token:
+@router.post(
+    "/login/access-token", dependencies=[Depends(get_rate_limiter(times=5, seconds=60))]
+)
+def login_access_token(session: SessionDep, body: LoginAccessToken) -> Token:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
@@ -37,7 +36,11 @@ def login_access_token(
     )
 
 
-@router.post("/login/test-token", response_model=UserPublic, dependencies=[Depends(get_rate_limiter(times=5, seconds=60))])
+@router.post(
+    "/login/test-token",
+    response_model=UserPublic,
+    dependencies=[Depends(get_rate_limiter(times=5, seconds=60))],
+)
 def test_token(current_user: CurrentUser) -> Any:
     """
     Test access token

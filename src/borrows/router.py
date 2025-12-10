@@ -24,11 +24,8 @@ from src.core.ratelimit import get_rate_limiter
 router = APIRouter(
     prefix="/borrows",
     tags=["borrows"],
-    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))]
+    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))],
 )
-
-
-
 
 
 @router.post(
@@ -213,10 +210,14 @@ def list_all_borrows(
 @router.get(
     "/{borrow_id}",
     response_model=BorrowRecordPublic,
-    dependencies=[Depends(require_any_permission(
-        Permission.BORROWS_READ,
-        Permission.BORROWS_READ_ALL,
-    ))],
+    dependencies=[
+        Depends(
+            require_any_permission(
+                Permission.BORROWS_READ,
+                Permission.BORROWS_READ_ALL,
+            )
+        )
+    ],
 )
 def get_borrow_record(
     borrow_id: uuid.UUID,
@@ -244,8 +245,7 @@ def get_borrow_record(
 
     if not can_read_all and not is_own_record:
         raise HTTPException(
-            status_code=403,
-            detail="You can only view your own borrow records"
+            status_code=403, detail="You can only view your own borrow records"
         )
 
     return borrow_record
