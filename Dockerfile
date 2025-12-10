@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev --no-compile-bytecode
 
 # Copy application code
-COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
+COPY ./pyproject.toml ./uv.lock ./alembic.ini ./logging.ini /app/
 COPY ./src /app/src
 COPY ./scripts /app/scripts
 COPY ./alembic /app/alembic
@@ -48,13 +48,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy virtual environment and application from base
 COPY --from=base /app/.venv /app/.venv
-COPY --from=base /app/pyproject.toml /app/uv.lock /app/alembic.ini /app/
+COPY --from=base /app/pyproject.toml /app/uv.lock /app/alembic.ini /app/logging.ini /app/
 COPY --from=base /app/src /app/src
 COPY --from=base /app/alembic /app/alembic
 COPY --from=base /app/scripts /app/scripts
 
-# Make entrypoint executable (after copying)
-RUN chmod +x /app/scripts/entrypoint.sh && \
+# Create logs directory and make entrypoint executable
+RUN mkdir -p /app/logs && \
+    chmod +x /app/scripts/entrypoint.sh && \
     # Fix Windows line endings (CRLF -> LF)
     sed -i 's/\r$//' /app/scripts/entrypoint.sh && \
     # Verify the file exists

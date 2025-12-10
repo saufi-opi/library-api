@@ -1,6 +1,28 @@
 services:
+  traefik:
+    image: traefik:latest
+    ports:
+      - "80:80"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.http.address=:80
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --accesslog=true
+      - --log.level=INFO
+    networks:
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-localhost}`)
+      - traefik.http.routers.traefik.entrypoints=http
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
   db:
-    image: postgres:17
+    image: postgres:17-alpine
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -17,10 +39,26 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+    networks:
+      - default
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - app-redis-data:/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     restart: always
     networks:
@@ -29,27 +67,28 @@ services:
       db:
         condition: service_healthy
         restart: true
+      redis:
+        condition: service_healthy
+        restart: true
     env_file:
       - .env
     environment:
       - POSTGRES_SERVER=db
+      - REDIS_SERVER=redis
     command: backend
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://localhost:8000/api/v1/utils/health-check/",
-        ]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.backend.entrypoints=http
+      - traefik.http.routers.backend.service=backend
+      - traefik.http.routers.backend.priority=90
+      - traefik.http.services.backend.loadbalancer.server.port=8000
 
 volumes:
   app-db-data:
-
-networks:
-  traefik-public:
-    # Allow setting it to false for testing
-    external: true
+  app-redis-data:

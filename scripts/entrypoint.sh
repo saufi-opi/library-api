@@ -20,4 +20,4 @@ run_prestart() {
 
 echo "Starting backend service..."
 run_prestart
-exec fastapi run --workers 4 src/main.py
+exec uvicorn src.main:app --host 0.0.0.0 --port 8000 --workers 4
