@@ -1,5 +1,10 @@
+from pydantic import EmailStr
 from sqlmodel import SQLModel
 
+
+class LoginAccessToken(SQLModel):
+    email: EmailStr
+    password: str
 
 # JSON payload containing access token
 class Token(SQLModel):

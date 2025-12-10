@@ -1,11 +1,10 @@
 from datetime import timedelta
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, HTTPException
 
 from src.auth import service
-from src.auth.schemas import Token
+from src.auth.schemas import LoginAccessToken, Token
 from src.core import security
 from src.core.config import settings
 from src.core.dependencies import CurrentUser, SessionDep
@@ -16,13 +15,13 @@ router = APIRouter(tags=["login"])
 
 @router.post("/login/access-token")
 def login_access_token(
-    session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    session: SessionDep, body: LoginAccessToken
 ) -> Token:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
     user = service.authenticate(
-        session=session, email=form_data.username, password=form_data.password
+        session=session, email=body.email, password=body.password
     )
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
