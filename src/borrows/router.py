@@ -2,7 +2,6 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi_limiter.depends import RateLimiter
 from sqlmodel import asc, col, desc, func, select
 
 from src.auth.permissions import Permission
@@ -20,11 +19,12 @@ from src.core.dependencies import (
     require_any_permission,
     require_permission,
 )
+from src.core.ratelimit import get_rate_limiter
 
 router = APIRouter(
     prefix="/borrows",
     tags=["borrows"],
-    dependencies=[Depends(RateLimiter(times=60, seconds=60))]
+    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))]
 )
 
 

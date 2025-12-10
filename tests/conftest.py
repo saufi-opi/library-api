@@ -14,6 +14,9 @@ from src.core.security import get_password_hash
 from src.main import app
 from src.users.models import User, UserPermissionOverride
 
+# Set environment to testing mode to disable rate limiting
+settings.ENVIRONMENT = "testing"
+
 
 @pytest.fixture(scope="function")
 def db() -> Generator[Session, None, None]:

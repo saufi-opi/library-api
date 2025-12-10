@@ -32,7 +32,13 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    ENVIRONMENT: Literal["local", "staging", "production", "testing"] = "local"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def RATE_LIMIT_ENABLED(self) -> bool:
+        """Disable rate limiting in testing environment."""
+        return self.ENVIRONMENT != "testing"
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)

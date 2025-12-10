@@ -2,7 +2,6 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi_limiter.depends import RateLimiter
 from sqlmodel import asc, col, desc, func, select
 
 from src.core.dependencies import (
@@ -11,6 +10,7 @@ from src.core.dependencies import (
     get_current_active_superuser,
 )
 from src.core.models import Message
+from src.core.ratelimit import get_rate_limiter
 from src.core.security import get_password_hash, verify_password
 from src.users import service
 from src.users.schemas import (
@@ -30,7 +30,7 @@ from src.users.schemas import (
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(RateLimiter(times=60, seconds=60))]
+    dependencies=[Depends(get_rate_limiter(times=60, seconds=60))]
 )
 
 

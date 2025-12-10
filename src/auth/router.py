@@ -2,20 +2,20 @@ from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi_limiter.depends import RateLimiter
 
 from src.auth import service
 from src.auth.schemas import LoginAccessToken, Token
 from src.core import security
 from src.core.config import settings
 from src.core.dependencies import CurrentUser, SessionDep
+from src.core.ratelimit import get_rate_limiter
 from src.users.schemas import UserPublic
 
 router = APIRouter(tags=["login"])
 
 
 
-@router.post("/login/access-token", dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+@router.post("/login/access-token", dependencies=[Depends(get_rate_limiter(times=5, seconds=60))])
 def login_access_token(
     session: SessionDep, body: LoginAccessToken
 ) -> Token:
@@ -37,7 +37,7 @@ def login_access_token(
     )
 
 
-@router.post("/login/test-token", response_model=UserPublic, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+@router.post("/login/test-token", response_model=UserPublic, dependencies=[Depends(get_rate_limiter(times=5, seconds=60))])
 def test_token(current_user: CurrentUser) -> Any:
     """
     Test access token
