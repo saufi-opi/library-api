@@ -241,7 +241,7 @@ class TestBooksEdgeCases:
         db.refresh(book1)
 
         # Try to update book1 to book2's ISBN
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/books/{book1.id}",
             headers=librarian_token_headers,
             json={

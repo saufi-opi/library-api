@@ -1,14 +1,45 @@
+import re
 import uuid
 from datetime import datetime
 
+from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
 
 # Shared properties
 class BookBase(SQLModel):
-    isbn: str = Field(max_length=20)
-    title: str = Field(max_length=500)
-    author: str = Field(max_length=255)
+    isbn: str = Field(max_length=20, min_length=10)
+    title: str = Field(max_length=500, min_length=1)
+    author: str = Field(max_length=255, min_length=1)
+
+    @field_validator("isbn")
+    @classmethod
+    def validate_isbn(cls, v: str) -> str:
+        """Validate ISBN format (ISBN-10 or ISBN-13)."""
+        # Remove hyphens and spaces
+        isbn = v.replace("-", "").replace(" ", "")
+
+        # Check if it's valid ISBN-10 or ISBN-13 format
+        if not (len(isbn) == 10 or len(isbn) == 13):
+            raise ValueError("ISBN must be 10 or 13 digits (hyphens allowed)")
+
+        # Check if it contains only digits (and X for ISBN-10)
+        if len(isbn) == 10:
+            if not re.match(r"^\d{9}[\dX]$", isbn):
+                raise ValueError("Invalid ISBN-10 format")
+        else:  # ISBN-13
+            if not isbn.isdigit():
+                raise ValueError("Invalid ISBN-13 format")
+
+        return v
+
+    @field_validator("title", "author")
+    @classmethod
+    def validate_not_empty(cls, v: str) -> str:
+        """Validate that fields are not empty or whitespace only."""
+        if not v or not v.strip():
+            raise ValueError("Field cannot be empty or whitespace only")
+        return v.strip()
 
 
 # Properties to receive on book creation

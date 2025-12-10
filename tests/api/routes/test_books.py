@@ -105,7 +105,7 @@ class TestBooksAPI:
         """Creating books with same ISBN should require same title/author."""
         # Create first book
         book1 = Book(
-            isbn="978-0-SAME-ISBN-0",
+            isbn="978-0-596-52068-7",
             title="Same Title",
             author="Same Author",
         )
@@ -117,7 +117,7 @@ class TestBooksAPI:
             "/api/v1/books/",
             headers=librarian_token_headers,
             json={
-                "isbn": "978-0-SAME-ISBN-0",
+                "isbn": "978-0-596-52068-7",
                 "title": "Same Title",
                 "author": "Same Author",
             },
@@ -133,7 +133,7 @@ class TestBooksAPI:
         """Creating book with same ISBN but different title should fail."""
         # Create first book
         book1 = Book(
-            isbn="978-0-CONFLICT-0",
+            isbn="978-0-321-56384-2",
             title="Original Title",
             author="Author",
         )
@@ -145,7 +145,7 @@ class TestBooksAPI:
             "/api/v1/books/",
             headers=librarian_token_headers,
             json={
-                "isbn": "978-0-CONFLICT-0",
+                "isbn": "978-0-321-56384-2",
                 "title": "Different Title",
                 "author": "Author",
             },
@@ -161,8 +161,8 @@ class TestBooksAPI:
     ):
         """Should be able to filter for available books only."""
         # Create available and unavailable books
-        available = Book(isbn="111", title="Available", author="A", is_available=True)
-        unavailable = Book(isbn="222", title="Unavailable", author="B", is_available=False)
+        available = Book(isbn="978-1-449-35573-9", title="Available", author="A", is_available=True)
+        unavailable = Book(isbn="978-0-262-03384-8", title="Unavailable", author="B", is_available=False)
         db.add(available)
         db.add(unavailable)
         db.commit()

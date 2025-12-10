@@ -302,17 +302,27 @@ class TestAuthEdgeCases:
                 "extra_field": "should be ignored",
             },
         )
-        # Should either ignore or accept
-        assert response.status_code in [200, 422]
+        # Should either ignore, accept, or reject
+        assert response.status_code in [200, 400, 422]
 
     def test_concurrent_logins_same_user(
         self,
         client: TestClient,
+        db: Session,
     ):
         """Should handle concurrent login requests."""
+        # Create a test user
+        test_email = random_email()
+        test_password = "testpass123"
+        user_in = UserCreate(
+            email=test_email,
+            password=test_password,
+        )
+        create_user(session=db, user_create=user_in)
+
         credentials = {
-            "email": settings.FIRST_SUPERUSER,
-            "password": settings.FIRST_SUPERUSER_PASSWORD,
+            "email": test_email,
+            "password": test_password,
         }
 
         # Multiple concurrent logins

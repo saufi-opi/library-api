@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import col, desc, func, select
 
 from src.auth.permissions import Permission
@@ -94,8 +94,8 @@ def return_book(
 def get_my_borrows(
     session: SessionDep,
     current_user: CurrentUser,
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=0),
     active_only: bool = False,
 ) -> Any:
     """
@@ -133,8 +133,8 @@ def get_my_borrows(
 def list_all_borrows(
     session: SessionDep,
     _current_user: CurrentUser,
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=0),
     active_only: bool = False,
     borrower_id: uuid.UUID | None = None,
     book_id: uuid.UUID | None = None,

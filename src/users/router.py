@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import func, select
 
 from src.core.dependencies import (
@@ -33,7 +33,11 @@ router = APIRouter(prefix="/users", tags=["users"])
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+def read_users(
+    session: SessionDep,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=0)
+) -> Any:
     """
     Retrieve users.
     """
@@ -205,7 +209,12 @@ def delete_user(
 ) -> Message:
     """
     Delete a user.
+
+    Note: Cannot delete a user with active (unreturned) borrows.
     """
+    from sqlmodel import select
+
+    from src.borrows.models import BorrowRecord
     from src.users.models import User
 
     user = session.get(User, user_id)
@@ -215,6 +224,21 @@ def delete_user(
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
+
+    # Check for active borrows
+    active_borrows = session.exec(
+        select(BorrowRecord).where(
+            BorrowRecord.borrower_id == user_id,
+            BorrowRecord.returned_at == None  # noqa: E711
+        )
+    ).first()
+
+    if active_borrows:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete user with active borrows. User must return all books first."
+        )
+
     session.delete(user)
     session.flush()
     return Message(message="User deleted successfully")

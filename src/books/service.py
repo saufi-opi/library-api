@@ -50,6 +50,15 @@ def create_book(session: Session, book_create: BookCreate) -> Book:
 def update_book(session: Session, db_book: Book, book_update: BookUpdate) -> Book:
     """Update an existing book."""
     update_data = book_update.model_dump(exclude_unset=True)
+
+    # If ISBN is being updated, check it doesn't conflict with another book
+    if "isbn" in update_data and update_data["isbn"] != db_book.isbn:
+        existing = get_book_by_isbn(session, update_data["isbn"])
+        if existing and existing.id != db_book.id:
+            raise ValueError(
+                f"ISBN {update_data['isbn']} is already assigned to another book"
+            )
+
     db_book.sqlmodel_update(update_data)
     session.add(db_book)
     session.flush()

@@ -242,10 +242,33 @@ class TestBorrowsEdgeCases:
         self,
         client: TestClient,
         member_token_headers: dict,
-        librarian_token_headers: dict,
         db: Session,
     ):
         """Should handle concurrent borrow attempts on same book."""
+        from src.auth.permissions import UserRole
+        from src.core.security import get_password_hash
+        from src.users.models import User
+        from tests.utils.utils import random_email
+
+        # Create a second member user
+        second_member = User(
+            email=random_email(),
+            hashed_password=get_password_hash("testpass123"),
+            is_active=True,
+            role=UserRole.MEMBER,
+        )
+        db.add(second_member)
+        db.commit()
+
+        # Get token for second member
+        login_response = client.post(
+            f"{settings.API_V1_STR}/login/access-token",
+            json={"email": second_member.email, "password": "testpass123"},
+        )
+        second_member_token_headers = {
+            "Authorization": f"Bearer {login_response.json()['access_token']}"
+        }
+
         # Create an available book
         book = Book(
             isbn="978-6-666-66666-6",
@@ -268,7 +291,7 @@ class TestBorrowsEdgeCases:
         # Second concurrent borrow should fail (book now unavailable)
         response2 = client.post(
             f"{settings.API_V1_STR}/borrows/",
-            headers=librarian_token_headers,
+            headers=second_member_token_headers,
             json={"book_id": str(book.id)},
         )
         assert response2.status_code == 400
@@ -306,5 +329,12 @@ class TestBorrowsEdgeCases:
         assert data["returned_at"] is None
 
         # Verify timestamp is reasonable
-        borrowed_at = datetime.fromisoformat(data["borrowed_at"].replace("Z", "+00:00"))
+        borrowed_at_str = data["borrowed_at"]
+        # Handle both 'Z' and '+00:00' timezone formats
+        if borrowed_at_str.endswith('Z'):
+            borrowed_at_str = borrowed_at_str.replace('Z', '+00:00')
+        borrowed_at = datetime.fromisoformat(borrowed_at_str)
+        # Ensure timezone-aware comparison
+        if borrowed_at.tzinfo is None:
+            borrowed_at = borrowed_at.replace(tzinfo=UTC)
         assert before_borrow <= borrowed_at <= after_borrow

@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import func, select
 
 from src.auth.permissions import Permission
@@ -49,8 +49,8 @@ def create_book(
 def list_books(
     session: SessionDep,
     _current_user: CurrentUser,
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=0),
     isbn: str | None = None,
     available_only: bool = False,
 ) -> Any:
@@ -126,8 +126,11 @@ def update_book(
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    book = service.update_book(session=session, db_book=book, book_update=book_in)
-    return book
+    try:
+        book = service.update_book(session=session, db_book=book, book_update=book_in)
+        return book
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
 
 
 @router.delete(
