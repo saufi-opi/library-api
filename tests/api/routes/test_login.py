@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from src.core.config import settings
 
 
-def test_get_access_token(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
+def test_get_access_token(client: TestClient, superuser_token_headers: dict[str, str]) -> None:  # noqa: ARG001
     login_data = {
         "email": settings.FIRST_SUPERUSER,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
@@ -15,7 +15,7 @@ def test_get_access_token(client: TestClient, superuser_token_headers: dict[str,
     assert tokens["access_token"]
 
 
-def test_get_access_token_incorrect_password(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
+def test_get_access_token_incorrect_password(client: TestClient, superuser_token_headers: dict[str, str]) -> None:  # noqa: ARG001
     login_data = {
         "email": settings.FIRST_SUPERUSER,
         "password": "incorrect",

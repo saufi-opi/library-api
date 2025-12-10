@@ -1,5 +1,4 @@
 """Edge case tests for books API."""
-import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 

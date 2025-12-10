@@ -46,7 +46,7 @@ def client() -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture(scope="module")
-def test_superuser(client: TestClient) -> User:
+def test_superuser(client: TestClient) -> User:  # noqa: ARG001
     """Create or get a superuser for testing."""
     with Session(engine) as session:
         user = session.exec(
@@ -76,7 +76,7 @@ def test_superuser(client: TestClient) -> User:
 
 
 @pytest.fixture(scope="module")
-def test_librarian(client: TestClient) -> User:
+def test_librarian(client: TestClient) -> User:  # noqa: ARG001
     """Create or get a librarian for testing."""
     with Session(engine) as session:
         user = session.exec(
@@ -106,7 +106,7 @@ def test_librarian(client: TestClient) -> User:
 
 
 @pytest.fixture(scope="module")
-def test_member(client: TestClient) -> User:
+def test_member(client: TestClient) -> User:  # noqa: ARG001
     """Create or get a member for testing."""
     with Session(engine) as session:
         user = session.exec(
@@ -146,24 +146,24 @@ def get_token_headers(client: TestClient, email: str, password: str) -> dict[str
 
 
 @pytest.fixture(scope="module")
-def superuser_token_headers(client: TestClient, test_superuser: User) -> dict[str, str]:
+def superuser_token_headers(client: TestClient, test_superuser: User) -> dict[str, str]:  # noqa: ARG001
     """Get superuser authentication headers."""
     return get_token_headers(client, settings.FIRST_SUPERUSER, settings.FIRST_SUPERUSER_PASSWORD)
 
 
 @pytest.fixture(scope="module")
-def normal_user_token_headers(client: TestClient, test_member: User) -> dict[str, str]:
+def normal_user_token_headers(client: TestClient, test_member: User) -> dict[str, str]:  # noqa: ARG001
     """Get normal user (member) authentication headers."""
     return get_token_headers(client, "member@test.com", "testpass123")
 
 
 @pytest.fixture(scope="module")
-def librarian_token_headers(client: TestClient, test_librarian: User) -> dict[str, str]:
+def librarian_token_headers(client: TestClient, test_librarian: User) -> dict[str, str]:  # noqa: ARG001
     """Get librarian authentication headers."""
     return get_token_headers(client, "librarian@test.com", "testpass123")
 
 
 @pytest.fixture(scope="module")
-def member_token_headers(client: TestClient, test_member: User) -> dict[str, str]:
+def member_token_headers(client: TestClient, test_member: User) -> dict[str, str]:  # noqa: ARG001
     """Get member authentication headers."""
     return get_token_headers(client, "member@test.com", "testpass123")

@@ -31,6 +31,7 @@ dev = [
     "pre-commit",
     "types-passlib",
     "coverage",
+    "pytest-cov",
 ]
 
 [build-system]

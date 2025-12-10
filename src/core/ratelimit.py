@@ -1,5 +1,4 @@
 from math import ceil
-from typing import Any
 
 from fastapi import Request, Response
 from fastapi_limiter import FastAPILimiter
@@ -16,12 +15,12 @@ async def init_rate_limiter() -> None:
     await FastAPILimiter.init(redis)
 
 
-def rate_limit_callback(request: Request, response: Response, pexpire: int) -> None:
+def rate_limit_callback(request: Request, response: Response, pexpire: int) -> None:  # noqa: ARG001
     """
     Callback for when a rate limit is exceeded.
     Adds headers to the response indicating the limit status.
     """
-    expire = ceil(pexpire / 1000)
+    expire = ceil(pexpire / 1000)  # noqa: F841
     raise ValueError("Too Many Requests")
 
 
