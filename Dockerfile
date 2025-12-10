@@ -62,4 +62,4 @@ RUN mkdir -p /app/logs && \
     ls -la /app/scripts/entrypoint.sh
 
 ENTRYPOINT ["/app/scripts/entrypoint.sh"]
-CMD ["backend"]
+CMD ["run-server"]
