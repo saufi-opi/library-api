@@ -4,7 +4,8 @@ from src.core.config import settings
 
 
 def test_get_access_token(
-    client: TestClient, superuser_token_headers: dict[str, str] # noqa: ARG001
+    client: TestClient,
+    superuser_token_headers: dict[str, str],  # noqa: ARG001
 ) -> None:
     login_data = {
         "email": settings.FIRST_SUPERUSER,
@@ -18,7 +19,8 @@ def test_get_access_token(
 
 
 def test_get_access_token_incorrect_password(
-    client: TestClient, superuser_token_headers: dict[str, str] # noqa: ARG001
+    client: TestClient,
+    superuser_token_headers: dict[str, str],  # noqa: ARG001
 ) -> None:
     login_data = {
         "email": settings.FIRST_SUPERUSER,
