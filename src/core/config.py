@@ -7,6 +7,7 @@ from pydantic import (
     BeforeValidator,
     EmailStr,
     PostgresDsn,
+    RedisDsn,
     computed_field,
     model_validator,
 )
@@ -59,6 +60,20 @@ class Settings(BaseSettings):
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
+        )
+
+    REDIS_SERVER: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_PASSWORD: str = ""
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def REDIS_URL(self) -> RedisDsn:
+        return RedisDsn.build(
+            scheme="redis",
+            host=self.REDIS_SERVER,
+            port=self.REDIS_PORT,
+            password=self.REDIS_PASSWORD or None,
         )
 
     FIRST_SUPERUSER: EmailStr

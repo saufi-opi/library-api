@@ -2,6 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_limiter.depends import RateLimiter
 from sqlmodel import asc, col, desc, func, select
 
 from src.core.dependencies import (
@@ -26,7 +27,11 @@ from src.users.schemas import (
     UserUpdateMe,
 )
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    dependencies=[Depends(RateLimiter(times=60, seconds=60))]
+)
 
 
 @router.get(

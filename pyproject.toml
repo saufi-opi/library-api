@@ -19,6 +19,8 @@ dependencies = [
     "sqlmodel",
     "bcrypt<5.0,>=4.0",
     "pyjwt",
+    "fastapi-limiter",
+    "redis",
 ]
 
 [dependency-groups]

@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 from starlette.middleware.cors import CORSMiddleware
 
 from src.auth.router import router as auth_router
@@ -10,6 +12,7 @@ from src.borrows.router import router as borrows_router
 from src.core.config import settings
 from src.core.exceptions import global_exception_handler
 from src.core.logging_config import setup_logging
+from src.core.ratelimit import init_rate_limiter
 from src.users.router import router as users_router
 
 # Setup logging
@@ -28,9 +31,19 @@ async def lifespan(_app: FastAPI):
     logger.info("Application startup")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"API Version: {settings.API_V1_STR}")
+
+    # Init Rate Limiter
+    try:
+        await init_rate_limiter()
+        logger.info("Rate limiter initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize rate limiter: {e}")
+
     yield
     # Shutdown: Clean up resources
     logger.info("Application shutdown")
+    await FastAPILimiter.close()
+
     from src.core.db import engine
 
     engine.dispose()
@@ -64,10 +77,9 @@ app.include_router(books_router, prefix=settings.API_V1_STR)
 app.include_router(borrows_router, prefix=settings.API_V1_STR)
 
 
-
-@app.get("/")
+@app.get("/", dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def root():
-    """Root endpoint."""
+    """Root endpoint. Rate limited to 60 requests per minute."""
     logger.info("Root endpoint accessed")
     return {
         "message": "Welcome to the API",

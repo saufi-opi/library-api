@@ -2,6 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_limiter.depends import RateLimiter
 from sqlmodel import asc, col, desc, func, select
 
 from src.auth.permissions import Permission
@@ -17,7 +18,11 @@ from src.books.schemas import (
 from src.core.dependencies import CurrentUser, SessionDep, require_permission
 from src.core.models import Message
 
-router = APIRouter(prefix="/books", tags=["books"])
+router = APIRouter(
+    prefix="/books",
+    tags=["books"],
+    dependencies=[Depends(RateLimiter(times=60, seconds=60))]
+)
 
 
 @router.post(
