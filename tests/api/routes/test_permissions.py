@@ -9,6 +9,7 @@ from src.auth.permissions import (
     get_user_effective_permissions,
 )
 from src.users.models import User, UserPermissionOverride
+from tests.utils.utils import random_email
 
 
 class TestPermissionSystem:
@@ -17,7 +18,7 @@ class TestPermissionSystem:
     def test_librarian_default_permissions(self, db: Session):
         """Librarians should have their default permissions."""
         user = User(
-            email="librarian@test.com",
+            email=random_email(),
             hashed_password="hashed",
             role=UserRole.LIBRARIAN,
         )
@@ -39,7 +40,7 @@ class TestPermissionSystem:
     def test_member_default_permissions(self, db: Session):
         """Members should have their default permissions."""
         user = User(
-            email="member@test.com",
+            email=random_email(),
             hashed_password="hashed",
             role=UserRole.MEMBER,
         )
@@ -62,7 +63,7 @@ class TestPermissionSystem:
     def test_permission_override_allow(self, db: Session):
         """Allow override should add permission."""
         user = User(
-            email="member_allow@test.com",
+            email=random_email(),
             hashed_password="hashed",
             role=UserRole.MEMBER,
         )
@@ -88,7 +89,7 @@ class TestPermissionSystem:
     def test_permission_override_deny(self, db: Session):
         """Deny override should remove permission."""
         user = User(
-            email="member_deny@test.com",
+            email=random_email(),
             hashed_password="hashed",
             role=UserRole.MEMBER,
         )
@@ -116,7 +117,7 @@ class TestPermissionSystem:
     def test_deny_wins_over_allow(self, db: Session):
         """Deny should take precedence when both are present."""
         user = User(
-            email="both@test.com",
+            email=random_email(),
             hashed_password="hashed",
             role=UserRole.MEMBER,
         )
@@ -148,7 +149,7 @@ class TestPermissionSystem:
     def test_superuser_has_all_permissions(self, db: Session):
         """Superusers should have all permissions regardless of role."""
         user = User(
-            email="super@test.com",
+            email=random_email(),
             hashed_password="hashed",
             role=UserRole.MEMBER,
             is_superuser=True,

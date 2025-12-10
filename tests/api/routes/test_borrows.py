@@ -129,11 +129,10 @@ class TestBorrowsAPI:
         client: TestClient,
         member_token_headers: dict,
         db: Session,
+        test_librarian,
     ):
         """Should not be able to return a book borrowed by someone else."""
-        import uuid
-
-        # Create book borrowed by different user
+        # Create book borrowed by different user (librarian)
         book = Book(
             isbn="978-4-444-44444-4",
             title="Other Book",
@@ -147,7 +146,7 @@ class TestBorrowsAPI:
         # Borrow record for a different user
         borrow = BorrowRecord(
             book_id=book.id,
-            borrower_id=uuid.uuid4(),  # Different user
+            borrower_id=test_librarian.id,  # Different user
         )
         db.add(borrow)
         db.commit()
